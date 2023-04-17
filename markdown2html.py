@@ -7,7 +7,18 @@ import re
 import sys
 import os
 
+
+
 def convert_md_to_html(md_text):
+    """
+        COnverts MD to HTML format
+
+        Parameters:
+        md_text (string): the html string
+
+        Returns:
+        string: the MD string
+    """
     # replace headers
     md_text = re.sub(r'^# (.+)$', r'<h1>\1</h1>', md_text, flags=re.M)
     md_text = re.sub(r'^## (.+)$', r'<h2>\1</h2>', md_text, flags=re.M)
