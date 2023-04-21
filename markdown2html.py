@@ -3,68 +3,48 @@
 A script that converts Markdown to HTML.
 """
 
-import re
 import sys
 import os
+import re
 
-
-
-def convert_md_to_html(md_text):
+def convert_markdown_to_html(input_file, output_file):
     """
-        COnverts MD to HTML format
-
-        Parameters:
-        md_text (string): the html string
-
-        Returns:
-        string: the MD string
+    Converts a Markdown file to HTML and writes the output to a file.
     """
-    # replace headers
-    md_text = re.sub(r'^# (.+)$', r'<h1>\1</h1>', md_text, flags=re.M)
-    md_text = re.sub(r'^## (.+)$', r'<h2>\1</h2>', md_text, flags=re.M)
-    md_text = re.sub(r'^### (.+)$', r'<h3>\1</h3>', md_text, flags=re.M)
-    md_text = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', md_text, flags=re.M)
-    md_text = re.sub(r'^##### (.+)$', r'<h5>\1</h5>', md_text, flags=re.M)
-    md_text = re.sub(r'^###### (.+)$', r'<h6>\1</h6>', md_text, flags=re.M)
-
-    # replace bold and italic
-    md_text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', md_text)
-    md_text = re.sub(r'\*(.+?)\*', r'<em>\1</em>', md_text)
-
-    # replace links
-    md_text = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', md_text)
-
-    # replace images
-    md_text = re.sub(r'!\[(.*?)\]\((.*?)\)', r'<img alt="\1" src="\2">', md_text)
-
-    # replace code blocks
-    md_text = re.sub(r'```(.*?)```', r'<pre><code>\1</code></pre>', md_text, flags=re.S)
-
-    # replace inline code
-    md_text = re.sub(r'`(.*?)`', r'<code>\1</code>', md_text)
-
-    # replace paragraphs
-    md_text = re.sub(r'^([^#\*>\n].+)$', r'<p>\1</p>', md_text, flags=re.M)
-
-    return md_text
-
-if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print('Usage: ./markdown2html.py README.md README.html')
+    # Check that the Markdown file exists and is a file
+    if not (os.path.exists(input_file) and os.path.isfile(input_file)):
+        print(f"Missing {input_file}", file=sys.stderr)
         sys.exit(1)
 
+    # Read the Markdown file and convert it to HTML
+    with open(input_file, encoding="utf-8") as f:
+        html_lines = []
+        for line in f:
+            # Check for Markdown headings
+            match = re.match(r"^(#+) (.*)$", line)
+            if match:
+                heading_level = len(match.group(1))
+                heading_text = match.group(2)
+                html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
+            else:
+                html_lines.append(line.rstrip())
+
+    # Write the HTML output to a file
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(html_lines))
+
+if __name__ == "__main__":
+    # Check that the correct number of arguments were provided
+    if len(sys.argv) != 3:
+        print("Usage: ./markdown2html.py <input_file> <output_file>", file=sys.stderr)
+        sys.exit(1)
+
+    # Get the input and output file names from the command-line arguments
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    if not os.path.isfile(input_file):
-        print('Missing <filename>')
-        sys.exit(1)
+    # Convert the Markdown file to HTML and write the output to a file
+    convert_markdown_to_html(input_file, output_file)
 
-    with open(input_file, 'r') as f:
-        markdown_text = f.read()
-
-    html_text = convert_md_to_html(markdown_text)
-
-    with open(output_file, 'w') as f:
-        f.write(html_text)
-    
+    # Exit with a successful status code
+    sys.exit(0)
